@@ -7,12 +7,13 @@ import certifi
 from dotenv import load_dotenv
 
 from langchain_chroma import Chroma
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from langchain_tavily import TavilyCrawl, TavilyExtract, TavilyMap
 
-from logger import (Colors, log_error, log_warning, log_info, log_success)
+from logger import (Colors, log_error, log_warning, log_info, log_success, log_header)
 
 load_dotenv()
 
@@ -47,6 +48,18 @@ async def main():
                 for result in res['results']]
     log_success(
         f"TavilyCrawl: Successfully crawled {len(all_docs)} documents.",
+    )
+
+    # split documents into chunks
+    log_header("DOCUMENT CHUNKING PHASE")
+    log_info(
+        f"✂️  Text Splitter: Processing {len(all_docs)} documents with 4000 chunk size and 200 overlap",
+        Colors.YELLOW,
+    )
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=4000, chunk_overlap=200)
+    splitted_docs = text_splitter.split_documents(all_docs)
+    log_success(
+        f"Text Splitter: Created {len(splitted_docs)} chunks from {len(all_docs)} documents"
     )
 
 if __name__ == "__main__":
